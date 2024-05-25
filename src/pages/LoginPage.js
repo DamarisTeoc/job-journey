@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Box, TextField, Button, Typography, InputLabel } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { AuthContext } from '../auth/AuthContext';
 
 const LoginPage = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleInputChange = (event) => {
@@ -12,12 +14,13 @@ const LoginPage = () => {
     setCredentials({ ...credentials, [name]: value });
   };
 
-  const handleLoginSubmit = (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault();
-    // Aquí iría la lógica para enviar los datos al backend y realizar el login
-    console.log(credentials);
-    // Si el login es exitoso, puedes redirigir al dashboard
-    // navigate('/dashboard');
+    try {
+      await login(credentials);
+    } catch (error) {
+      console.error('Error during login:', error.message);
+    }
   };
 
   const handleGoToRegister = () => {
@@ -29,9 +32,7 @@ const LoginPage = () => {
         
         <AccountCircleIcon sx={{ m: 1, color: '#8B8C89', height: '100px', width:'100px' }}/>
         
-        <Typography variant="h4">
-          Login
-        </Typography>
+        <Typography variant="h4">Login</Typography>
         <Box component="form" onSubmit={handleLoginSubmit} sx={{ mt: 1 }}>
         <InputLabel required htmlFor="description-required">Username</InputLabel>
           <TextField
