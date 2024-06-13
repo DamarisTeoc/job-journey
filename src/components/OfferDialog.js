@@ -16,6 +16,7 @@ const OfferDialog = ({ open, handleClose }) => {
   const [modality, setModality] = useState('');
   const { user } = useContext(AuthContext);
   const [creationDate, setCreationDate] = useState(new Date().toISOString().slice(0, 10));
+  console.log('Current user:', user);
 
   const handleSave = async () => {
 
@@ -35,10 +36,11 @@ const OfferDialog = ({ open, handleClose }) => {
       notes,
       interest,
       modality,
-      creation_date: creationDate,
+      created_at: creationDate,
     };
-
+    console.log('offer data:', offerData);
     try {
+      console.log('Sending offer data:', offerData);
       const response = await fetch('http://localhost:3000/api/offers', {
         method: 'POST',
         headers: {
@@ -49,7 +51,8 @@ const OfferDialog = ({ open, handleClose }) => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
       const result = await response.json();
       console.log(result);

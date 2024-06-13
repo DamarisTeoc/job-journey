@@ -10,6 +10,8 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('user_id');
+    console.log('Token from localStorage:', token);
+    console.log('User ID from localStorage:', userId);
     if (token && userId) {
       setUser({ token, id: userId });
     }
@@ -26,9 +28,10 @@ const AuthProvider = ({ children }) => {
       });
       const data = await response.json();
       if (response.ok) {
+        console.log('Login response data:', data);
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user_id', data.user.id);
-        setUser({ token: data.token, id: data.user.id });
+        localStorage.setItem('user_id', data.user.user_id);
+        setUser({ token: data.token, id: data.user.user_id });
         navigate('/dashboard');
       } else {
         throw new Error(data.message);
@@ -50,9 +53,10 @@ const AuthProvider = ({ children }) => {
       });
       const data = await response.json();
       if (response.ok) {
+        console.log('Register response data:', data);
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user_id', data.user.id);
-        setUser({ token: data.token, id: data.user.id });
+        localStorage.setItem('user_id', data.user.user_id);
+        setUser({ token: data.token, user_id: data.user.user_id });
         navigate('/dashboard');
       } else {
         throw new Error(data.message);
