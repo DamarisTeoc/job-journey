@@ -1,51 +1,57 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, TextField, Button, Grid, Typography, MenuItem, InputLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { AuthContext } from '../auth/AuthContext';
 
-const OfferDialog = ({ open, handleClose }) => {
+const OfferDialog = ({ open, handleClose, addOffer, offerToEdit, updateOffer }) => {
 
-  const [title, setTitle] = useState ('');
-  const [description, setDescription] = useState('');
-  const [company, setCompany] = useState('');
-  const [location, setLocation] = useState('');
-  const [linkOffer, setLinkOffer] = useState('');
-  const [stackRequired, setStackRequired] = useState('');
-  const [notes, setNotes] = useState('');
-  const [interest, setInterest] = useState('');
-  const [modality, setModality] = useState('');
   const { user } = useContext(AuthContext);
-  const [creationDate, setCreationDate] = useState(new Date().toISOString().slice(0, 10));
+
+  const [formValues, setFormValues] = useState({
+    title: '',
+    description: '',
+    company: '',
+    location: '',
+    link_offer: '',
+    stack_required: '',
+    notes: '',
+    interest: '',
+    modality: '',
+    created_at: new Date().toISOString().slice(0, 10)
+  });
   console.log('Current user:', user);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    if (offerToEdit) {
+      setFormValues(offerToEdit);
+    }
+  }, [offerToEdit]);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues({
+      ...formValues,
+      [name]: value,
+    });
+  };
+
+  const handleSave = async () => {
     if (!user || !user.id || !user.token) {
       console.error('User information is missing!');
       return;
     }
 
     const offerData = {
-      user_id: user.id, // Asegúrate de que `user.id` está disponible en el contexto
-      title,
-      description,
-      company,
-      location,
-      link_offer: linkOffer,
-      stack_required: stackRequired,
-      notes,
-      interest,
-      modality,
-      created_at: creationDate,
+      ...formValues,
+      user_id: user.id,
     };
-    console.log('offer data:', offerData);
+
     try {
-      console.log('Sending offer data:', offerData);
       const response = await fetch('http://localhost:3000/api/offers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`, // Envía el token JWT en la cabecera
+          'Authorization': `Bearer ${user.token}`,
         },
         body: JSON.stringify(offerData),
       });
@@ -54,8 +60,9 @@ const OfferDialog = ({ open, handleClose }) => {
         const errorText = await response.text();
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
+
       const result = await response.json();
-      console.log(result);
+      addOffer(result);
       handleClose();
     } catch (error) {
       console.error('Hubo un problema al guardar la oferta:', error);
@@ -67,7 +74,7 @@ const OfferDialog = ({ open, handleClose }) => {
       <DialogTitle>
         <Grid container justifyContent="space-between" alignItems="center">
           <Grid item>
-            <Typography variant="h6">Create Job Offer</Typography>
+            <Typography variant="h6">{offerToEdit ? 'Edit Job Offer' : 'Create Job Offer'}</Typography>
           </Grid>
           <Grid item>
             <Button onClick={handleClose}>
@@ -78,80 +85,134 @@ const OfferDialog = ({ open, handleClose }) => {
       </DialogTitle>
       <DialogContent margin="normal">
       <InputLabel required htmlFor="job title">Job title</InputLabel>
-        <TextField value={title} onChange={e => setTitle(e.target.value)} fullWidth sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
+      <TextField
+          value={formValues.title}
+          onChange={handleInputChange}
+          name="title"
+          fullWidth
+          sx={{
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#003366',
             },
-          }
-        }} />
-        <InputLabel required htmlFor="company-name">Company name</InputLabel>
-        <TextField value={company} onChange={e => setCompany(e.target.value)} fullWidth sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#003366',
+              },
             },
-          }
-        }} />
+          }}
+        />
+        <InputLabel required htmlFor="company">Company name</InputLabel>
+        <TextField
+          value={formValues.company}
+          onChange={handleInputChange}
+          name="company"
+          fullWidth
+          sx={{
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#003366',
+            },
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#003366',
+              },
+            },
+          }}
+        />
         <InputLabel htmlFor="location">Location</InputLabel>
-        <TextField onChange={e => setLocation(e.target.value)} fullWidth sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
+        <TextField
+          value={formValues.location}
+          onChange={handleInputChange}
+          name="location"
+          fullWidth
+          sx={{
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#003366',
             },
-          }
-        }} />
-        <InputLabel required htmlFor="link">Link offer</InputLabel>
-        <TextField onChange={e => setLinkOffer(e.target.value)} fullWidth sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#003366',
+              },
             },
-          }
-        }} />
-        <InputLabel htmlFor="stack-required">Stack required</InputLabel>
-        <TextField  value={stackRequired} onChange={e => setStackRequired(e.target.value)} fullWidth sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
+          }}
+        />
+        <InputLabel required htmlFor="link_offer">Link offer</InputLabel>
+        <TextField
+          value={formValues.link_offer}
+          onChange={handleInputChange}
+          name="link_offer"
+          fullWidth
+          sx={{
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#003366',
             },
-          }
-        }} />
-        <InputLabel htmlFor="job description">Job description</InputLabel>
-        <TextField onChange={e => setDescription(e.target.value)}  value={description} fullWidth multiline rows={4} sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#003366',
+              },
             },
-          }
-        }} />
+          }}
+        />
+        <InputLabel htmlFor="stack_required">Stack required</InputLabel>
+        <TextField
+          value={formValues.stack_required}
+          onChange={handleInputChange}
+          name="stack_required"
+          fullWidth
+          sx={{
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#003366',
+            },
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#003366',
+              },
+            },
+          }}
+        />
+        <InputLabel htmlFor="description">Job description</InputLabel>
+        <TextField
+          value={formValues.description}
+          onChange={handleInputChange}
+          name="description"
+          fullWidth
+          multiline
+          rows={4}
+          sx={{
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#003366',
+            },
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#003366',
+              },
+            },
+          }}
+        />
         <InputLabel htmlFor="notes">Notes</InputLabel>
-        <TextField value={notes} onChange={e => setNotes(e.target.value)} fullWidth multiline rows={2} sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
+        <TextField
+          value={formValues.notes}
+          onChange={handleInputChange}
+          name="notes"
+          fullWidth
+          multiline
+          rows={2}
+          sx={{
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: '#003366',
             },
-          }
-        }} />
+            '& .MuiOutlinedInput-root': {
+              '&.Mui-focused fieldset': {
+                borderColor: '#003366',
+              },
+            },
+          }}
+        />
         <Grid container spacing={2}>
           <Grid item xs={4}>
             <TextField
               label="Creation Date*"
-              value={creationDate}
+              value={formValues.created_at}
+              name="created_at"
               fullWidth
               margin="normal"
               disabled
@@ -161,8 +222,9 @@ const OfferDialog = ({ open, handleClose }) => {
             <TextField
               label="Interest"
               select
-              value={interest}
-              onChange={(e) => setInterest(e.target.value)}
+              value={formValues.interest}
+              name="interest"
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
             >
@@ -175,8 +237,9 @@ const OfferDialog = ({ open, handleClose }) => {
             <TextField
               label="Modality"
               select
-              value={modality}
-              onChange={(e) => setModality(e.target.value)}
+              value={formValues.modality}
+              name="modality"
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
             >
@@ -186,30 +249,34 @@ const OfferDialog = ({ open, handleClose }) => {
             </TextField>
           </Grid>
         </Grid>
-        <TextField label="Benefits" fullWidth margin="normal" sx={{
-          '& .MuiInputLabel-root.Mui-focused': {
-            color: '#003366',
-          }, '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
-              borderColor: '#003366',
-            },
-          }
-        }} />
         <Grid container spacing={2} justifyContent="flex-end" marginTop={2}>
-          <Button variant="contained" onClick={handleClose} sx={{
-            mt: 10, mb: 2, backgroundColor: '#003366', boxShadow: 'none', fontWeight: 'bold',
-            '&:hover': {
-              boxShadow: 'none',
-              backgroundColor: '#003366',
-            },
-          }}>Cancel</Button>
-          <Button variant="contained" color="primary" sx={{
-            mt: 10, mb: 2, marginX: '20px', backgroundColor: '#003366', boxShadow: 'none', fontWeight: 'bold',
-            '&:hover': {
-              boxShadow: 'none',
-              backgroundColor: '#003366',
-            },
-          }} onClick={handleSave}>Save</Button>
+          <Button
+            variant="contained"
+            onClick={handleClose}
+            sx={{
+              mt: 10, mb: 2, backgroundColor: '#003366', boxShadow: 'none', fontWeight: 'bold',
+              '&:hover': {
+                boxShadow: 'none',
+                backgroundColor: '#003366',
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{
+              mt: 10, mb: 2, marginX: '20px', backgroundColor: '#003366', boxShadow: 'none', fontWeight: 'bold',
+              '&:hover': {
+                boxShadow: 'none',
+                backgroundColor: '#003366',
+              },
+            }}
+            onClick={handleSave}
+          >
+            Save
+          </Button>
         </Grid>
       </DialogContent>
     </Dialog>

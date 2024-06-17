@@ -7,6 +7,15 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 const NavBar = () => {
   const navigate = useNavigate();
 
+  const handleLogoClick = () => {
+    navigate('/dashboard');
+  };
+
+  const handleAccountClick = () => {
+    navigate('/profile');
+  };
+
+
   const handleAboutClick = () => {
     navigate('/about');
   };
@@ -15,13 +24,13 @@ const NavBar = () => {
   return (
     <AppBar position="static" elevation={0}>
       <Toolbar sx={{backgroundColor:'#003366'}}>
-        <Typography variant="h6" style={{ flexGrow: 1, fontWeight: 'bold', fontSize:'24px' }}>
+        <Typography variant="h6" style={{ flexGrow: 1, fontWeight: 'bold', fontSize:'24px', cursor: 'pointer' }} onClick={handleLogoClick}>
           JOBJOURNEY
         </Typography>
         <Button color="inherit" onClick={handleAboutClick} style={{fontWeight: 'bold', fontSize:'16px' }} sx={{ marginX: 3 }}>
           About
         </Button>
-        <IconButton color="inherit">
+        <IconButton color="inherit" onClick={handleAccountClick}>
           <AccountBoxIcon />
         </IconButton>
         <IconButton color="inherit">
